@@ -1,7 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 
-# Helper function to serialize product data
 def product_serializer(product) -> dict:
     return {
         "_id": str(product["_id"]),

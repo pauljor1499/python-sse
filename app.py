@@ -7,13 +7,13 @@ import asyncio
 
 app = FastAPI()
 
-# Initialize ProductService with MongoDB URI
 db_url = "mongodb+srv://admin:admin@cluster0.aeltnpt.mongodb.net/"
 product_service = ProductService(db_url)
 
 # Store connected clients for SSE
 clients = []
 
+# Create a product
 @app.post("/products/")
 async def create_product(product: Product):
     product_data = product.model_dump()
@@ -21,13 +21,16 @@ async def create_product(product: Product):
     await notify_clients(f"New product added: {product_id}")
     return {"id": product_id}
 
+# Get a single product by ID
 @app.get("/products/{product_id}")
 async def read_product(product_id: str):
     product = await product_service.get_product(product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
+    await notify_clients(f"Viewed product: {product_id}")
     return product
 
+# Update a product by ID
 @app.put("/products/{product_id}")
 async def update_product(product_id: str, product_update: ProductUpdate):
     updated_data = {k: v for k, v in product_update.model_dump().items() if v is not None}
@@ -37,6 +40,7 @@ async def update_product(product_id: str, product_update: ProductUpdate):
     await notify_clients(f"Product updated: {product_id}")
     return {"msg": "Product updated"}
 
+# Delete a product by ID
 @app.delete("/products/{product_id}")
 async def delete_product(product_id: str):
     if not await product_service.delete_product(product_id):
@@ -44,9 +48,11 @@ async def delete_product(product_id: str):
     await notify_clients(f"Product deleted: {product_id}")
     return {"msg": "Product deleted"}
 
+# List all products
 @app.get("/products/")
 async def list_products(price: Optional[float] = Query(None)):
     products = await product_service.list_products(price)
+    await notify_clients(f"Viewed all products")
     return products
 
 
@@ -62,7 +68,6 @@ async def events():
                 yield data
         except asyncio.CancelledError:
             clients.remove(queue)  # Remove client on disconnect
-    
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 # Notify all connected clients
