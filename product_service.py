@@ -43,6 +43,11 @@ class ProductService:
         return result.deleted_count > 0
 
     # List all products
-    async def list_products(self):
-        products = await self.collection.find().to_list(100)
+    async def list_products(self, price: float):
+        pipeline = []
+        if price is not None:
+            pipeline.append({
+                "$match": {"price": price}
+            })
+        products = await self.collection.aggregate(pipeline).to_list(100)
         return [product_serializer(product) for product in products]

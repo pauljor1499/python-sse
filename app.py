@@ -45,8 +45,8 @@ async def delete_product(product_id: str):
     return {"msg": "Product deleted"}
 
 @app.get("/products/")
-async def list_products():
-    products = await product_service.list_products()
+async def list_products(price: Optional[float] = Query(None)):
+    products = await product_service.list_products(price)
     return products
 
 
