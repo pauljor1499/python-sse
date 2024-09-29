@@ -13,8 +13,8 @@ def product_serializer(product) -> dict:
 class ProductService:
     def __init__(self, db_url: str):
         self.client = AsyncIOMotorClient(db_url)
-        self.db = self.client["test-product"]  # Your database name
-        self.collection = self.db["products"]  # Your collection name
+        self.db = self.client["test-product"]
+        self.collection = self.db["products"]
 
     # Create a product
     async def create_product(self, product_data: dict):
